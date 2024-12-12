@@ -487,16 +487,15 @@ class Aichess():
 
         # Add the initial state to the path
         path = [initialState]
-        print(currentState)
-        print(currentString)
+
+
         while not checkMate:
             currentDict = self.qTable[currentString]
-            maxQ = -100000
+            maxQ = -100000 # -float('inf') mejor opcion
             maxState = None
 
             # Check which is the next state with the highest Q-value
-            for stateString in currentDict.keys():
-                qValue = currentDict[stateString]
+            for stateString, qValue in currentDict.items():
                 if maxQ < qValue:
                     maxQ = qValue
                     maxState = stateString
@@ -512,7 +511,7 @@ class Aichess():
             currentState = state
 
             # When it gets to checkmate, the execution is over
-            if self.isCheckMate(state):
+            if self.isCheckMate(currentState):
                 checkMate = True
 
         print("Sequence of moves: ", path)
@@ -572,7 +571,7 @@ class Aichess():
                 print(valid_actions)
 
                 randomValue = np.random.random()
-                if randomValue < epsilon or all(self.stateToString(action) not in self.qTable[currentString] for action in valid_actions):
+                if randomValue < epsilon:
                     nextState = random.choice(valid_actions)
 
                 else:
@@ -609,21 +608,39 @@ class Aichess():
 
             number_of_iterations += 1
 
-    def print_q_table_as_matrix(self):
-        """
-        Imprime la tabla Q en formato de matriz, donde las filas son estados
-        y las columnas representan las acciones posibles.
-        """
-        print("Q-Table (Estado x Acción):")
-        for idx, row in enumerate(self.qTable):
-            print(f"Estado {idx}: {row}")
+    def getMovement(self, state, nextState):
+        # Dada una posición inicial y un estado sucesor,
+        # identifica las piezas que han cambiado su posición
+        pieceState = None
+        pieceNextState = None
+        for piece in state:
+            if piece not in nextState:  # Busca la pieza que fue movida
+                movedPiece = piece[2]  # Identifica la pieza movida
+                pieceNext = self.getPieceState(nextState, movedPiece)
+                if pieceNext is not None:
+                    pieceState = piece
+                    pieceNextState = pieceNext
+                    break
+        return [pieceState, pieceNextState]
 
-    def getMovement(self, currentState, state):
+    def print_q_table_max(self, q_table):
 
-        if currentState[0] == state[0]:
-            return [currentState[1], state[1]]
-        else:
-            return [currentState[0], state[0]]
+        print("Estado actual         | Estado con mayor Q     | Valor Q máximo")
+        print("-" * 60)
+
+        for current_state, actions in q_table.items():
+            if actions:  # Si hay acciones disponibles para este estado
+                max_next_state = max(actions, key=actions.get)  # Estado con el mayor Q-value
+                max_value = actions[max_next_state]  # Máximo Q-value
+                print(
+                    f"{str(self.stringToState(current_state)):<20} | "
+                    f"{str(self.stringToState(max_next_state)):<20} | "
+                    f"{max_value:.2f}"
+                )
+            else:
+                print(
+                    f"{str(self.stringToState(current_state)):<20} | {'N/A':<20} | {'N/A'}"
+                )
 
 
 def translate(s):
@@ -645,6 +662,8 @@ def translate(s):
     except:
         print(s + "is not in the format '[number][letter]'")
         return None
+
+
 
 if __name__ == "__main__":
 
@@ -675,14 +694,11 @@ if __name__ == "__main__":
     gamma = 0.8
     epsilon = 0.2
     aichess.qlearning(currentState, alpha, gamma, epsilon)
-    #aichess.AStarSearch(currentState)
-    #print("#A* move sequence...  ", aichess.pathToTarget)
-    #print("A* End\n")
-    print(aichess.qTable)
-    #print("A* printing end state")
-    #aichess.chess.boardSim.print_board()
 
-    aichess.reconstructPath(currentState)
+    print(aichess.qTable)
+    #aichess.reconstructPath(currentState)
+    aichess.print_q_table_max(aichess.qTable)
+
 
 
 
