@@ -626,7 +626,6 @@ class Aichess():
     def print_q_table_max(self, q_table):
 
         print("Estado actual         | Estado con mayor Q     | Valor Q máximo")
-        print("-" * 60)
 
         for current_state, actions in q_table.items():
             if actions:  # Si hay acciones disponibles para este estado
