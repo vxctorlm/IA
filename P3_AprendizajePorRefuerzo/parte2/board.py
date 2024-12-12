@@ -274,7 +274,8 @@ class Board():
 
             listPotentialNextStates = []
 
-            if (str(self.board[mypiece[0]][mypiece[1]]) == 'K'):
+            #if (str(self.board[mypiece[0]][mypiece[1]]) == 'K'):
+            if mypiece[2] == 6:
 
                 #      print(" mypiece at  ",mypiece[0],mypiece[1])
                 """""
@@ -318,8 +319,8 @@ class Board():
 
 
 
-            elif (str(self.board[mypiece[0]][mypiece[1]]) == 'R'):
-
+            #elif (str(self.board[mypiece[0]][mypiece[1]]) == 'R'):
+            elif mypiece[2] == 2:
 
                 #         print(" mypiece at  ",mypiece[0],mypiece[1])
                 listPotentialNextStates = []

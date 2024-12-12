@@ -505,8 +505,9 @@ class Aichess():
             path.append(state)
             movement = self.getMovement(currentState, state)
             # Make the corresponding movement
+            print(f"Current State: {currentState}, movement: {movement}")
             self.chess.move(movement[0], movement[1])
-            self.chess.board.print_board()
+            #self.chess.board.print_board()
             currentString = maxState
             currentState = state
 
@@ -549,40 +550,37 @@ class Aichess():
         return self.chess.boardSim.getFixedListNextStatesW(currentState)
 
     def qlearning(self, startState, alpha, gamma, epsilon):
-
         currentState = startState
-        max_iterations = 1000
+        max_iterations = 10
         number_of_iterations = 0
-        print(startState)
+
         while number_of_iterations < max_iterations:
             self.newBoardSim(currentState)
-            print(f"Iteration: {number_of_iterations}")
+
             while not self.isCheckMate(currentState):
 
-                if currentState[0][2] == 6: currentState[0], currentState[1] = currentState[1], currentState[0]
+                if currentState[0][2] == 6:
+                    currentState[0], currentState[1] = currentState[1], currentState[0]
+
                 currentString = self.stateToString(currentState)
 
                 if currentString not in self.qTable:
                     self.qTable[currentString] = {}
 
-                actions = self.getListNextStatesWFixed(currentState)
-                #print(f"actions: {actions}, quantitat de accions {len(actions)}")
-                valid_actions = [action for action in actions if action is not None]
-                print(valid_actions)
+                actions = self.getListNextStatesW(currentState)
 
                 randomValue = np.random.random()
                 if randomValue < epsilon:
-                    nextState = random.choice(valid_actions)
-
+                    nextState = random.choice(actions)
                 else:
                     nextState = max(
-                        valid_actions,
+                        actions,
                         key=lambda action: self.qTable[currentString].get(self.stateToString(action), 0)
                     )
 
                 if self.isCheckMate(nextState):
                     reward_function = 100
-                    self.chess.boardSim.print_board()
+
                 else:
                     reward_function = -1
 
@@ -591,7 +589,8 @@ class Aichess():
 
                 nextString = self.stateToString(nextState)
                 if nextString not in self.qTable[currentString]:
-                    self.qTable[currentString][nextString] = 0  # Valor inicial
+                    self.qTable[currentString][nextString] = 0
+
                 if nextString not in self.qTable:
                     self.qTable[nextString] = {}
 
@@ -601,12 +600,14 @@ class Aichess():
                         + alpha * (reward_function + gamma * max(self.qTable[nextString].values(), default=0))
                 )
 
-                if currentState[0] == nextState[0]: self.chess.moveSim(currentState[1], nextState[1])
-                elif currentState[1] == nextState[1]: self.chess.moveSim(currentState[0], nextState[0])
+                #if currentState[0] == nextState[0]: self.chess.moveSim(currentState[1], nextState[1])
+                #elif currentState[1] == nextState[1]: self.chess.moveSim(currentState[0], nextState[0])
 
                 currentState = nextState
 
+            currentState = startState
             number_of_iterations += 1
+            print(number_of_iterations)
 
     def getMovement(self, state, nextState):
         # Dada una posición inicial y un estado sucesor,
@@ -694,9 +695,7 @@ if __name__ == "__main__":
     epsilon = 0.2
     aichess.qlearning(currentState, alpha, gamma, epsilon)
 
-    print(aichess.qTable)
-    #aichess.reconstructPath(currentState)
-    aichess.print_q_table_max(aichess.qTable)
+    aichess.reconstructPath(currentState)
 
 
 
