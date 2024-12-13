@@ -507,7 +507,7 @@ class Aichess():
             # Make the corresponding movement
             print(f"Current State: {currentState}, movement: {movement}")
             self.chess.move(movement[0], movement[1])
-            #self.chess.board.print_board()
+            self.chess.board.print_board()
             currentString = maxState
             currentState = state
 
@@ -551,7 +551,7 @@ class Aichess():
 
     def qlearning(self, startState, alpha, gamma, epsilon):
         currentState = startState
-        max_iterations = 10
+        max_iterations = 1000
         number_of_iterations = 0
 
         while number_of_iterations < max_iterations:
@@ -585,7 +585,6 @@ class Aichess():
                     reward_function = -1
 
                 if nextState[0][2] == 6: nextState[0], nextState[1] = nextState[1], nextState[0]
-                if currentState == nextState: continue
 
                 nextString = self.stateToString(nextState)
                 if nextString not in self.qTable[currentString]:
@@ -600,8 +599,8 @@ class Aichess():
                         + alpha * (reward_function + gamma * max(self.qTable[nextString].values(), default=0))
                 )
 
-                #if currentState[0] == nextState[0]: self.chess.moveSim(currentState[1], nextState[1])
-                #elif currentState[1] == nextState[1]: self.chess.moveSim(currentState[0], nextState[0])
+                if currentState[0] == nextState[0]: self.chess.moveSim(currentState[1], nextState[1])
+                elif currentState[1] == nextState[1]: self.chess.moveSim(currentState[0], nextState[0])
 
                 currentState = nextState
 
@@ -610,18 +609,18 @@ class Aichess():
             print(number_of_iterations)
 
     def getMovement(self, state, nextState):
-        # Dada una posición inicial y un estado sucesor,
-        # identifica las piezas que han cambiado su posición
+        # Given a state and a successor state, return the postiion of the piece that has been moved in both states
         pieceState = None
         pieceNextState = None
         for piece in state:
-            if piece not in nextState:  # Busca la pieza que fue movida
-                movedPiece = piece[2]  # Identifica la pieza movida
+            if piece not in nextState:
+                movedPiece = piece[2]
                 pieceNext = self.getPieceState(nextState, movedPiece)
-                if pieceNext is not None:
+                if pieceNext != None:
                     pieceState = piece
                     pieceNextState = pieceNext
                     break
+
         return [pieceState, pieceNextState]
 
     def print_q_table_max(self, q_table):
