@@ -553,7 +553,7 @@ class Aichess():
 
 
 
-    def qlearning(self, startState, alpha, gamma, epsilon, drunked = False):
+    def qlearning(self, startState, alpha, gamma, epsilon, drunked = True):
         currentState = startState
         number_of_iterations = 0
         end = False
@@ -598,6 +598,7 @@ class Aichess():
                 else:
                     reward_function = -self.h(nextState)
                 """""
+
 
                 if nextState[0][2] == 6: nextState[0], nextState[1] = nextState[1], nextState[0]
                 if currentState == nextState: continue
