@@ -5,7 +5,9 @@ Created on Thu Sep  8 11:22:03 2022
 
 @author: ignasi
 """
+import copy
 import queue
+import time
 
 import chess
 import numpy as np
@@ -549,13 +551,16 @@ class Aichess():
     def getListNextStatesWFixed(self, currentState):
         return self.chess.boardSim.getFixedListNextStatesW(currentState)
 
-    def qlearning(self, startState, alpha, gamma, epsilon):
-        currentState = startState
-        max_iterations = 1000
-        number_of_iterations = 0
 
-        while number_of_iterations < max_iterations:
+
+    def qlearning(self, startState, alpha, gamma, epsilon, drunked = False):
+        currentState = startState
+        number_of_iterations = 0
+        end = False
+
+        while not end:
             self.newBoardSim(currentState)
+            q_table_old = copy.deepcopy(self.qTable)
 
             while not self.isCheckMate(currentState):
 
@@ -570,6 +575,7 @@ class Aichess():
                 actions = self.getListNextStatesW(currentState)
 
                 randomValue = np.random.random()
+
                 if randomValue < epsilon:
                     nextState = random.choice(actions)
                 else:
@@ -577,14 +583,24 @@ class Aichess():
                         actions,
                         key=lambda action: self.qTable[currentString].get(self.stateToString(action), 0)
                     )
+                if drunked:
+                    actions.remove(nextState)
+                    nextState = random.choice(actions)
 
+                """""
                 if self.isCheckMate(nextState):
                     reward_function = 100
 
                 else:
                     reward_function = -1
+                """""
+                if self.isCheckMate(nextState):
+                    reward_function = 100
+                else:
+                    reward_function = -self.h(nextState)
 
                 if nextState[0][2] == 6: nextState[0], nextState[1] = nextState[1], nextState[0]
+                if currentState == nextState: continue
 
                 nextString = self.stateToString(nextState)
                 if nextString not in self.qTable[currentString]:
@@ -593,53 +609,54 @@ class Aichess():
                 if nextString not in self.qTable:
                     self.qTable[nextString] = {}
 
-
-                self.qTable[currentString][nextString] = (
-                        (1 - alpha) * self.qTable[currentString][nextString]
-                        + alpha * (reward_function + gamma * max(self.qTable[nextString].values(), default=0))
+                self.qTable[currentString][nextString] += alpha * (
+                        reward_function + gamma * max(self.qTable[nextString].values(), default=0)
+                        - self.qTable[currentString][nextString]
                 )
 
+                """""
                 if currentState[0] == nextState[0]: self.chess.moveSim(currentState[1], nextState[1])
                 elif currentState[1] == nextState[1]: self.chess.moveSim(currentState[0], nextState[0])
+                """""
 
                 currentState = nextState
-
+            cambio = self.cambio_promedio(q_table_old, self.qTable)
+            if cambio < 1e-5:
+                print(number_of_iterations)
+                end = True
+            print(cambio)
             currentState = startState
             number_of_iterations += 1
-            print(number_of_iterations)
+
 
     def getMovement(self, state, nextState):
-        # Given a state and a successor state, return the postiion of the piece that has been moved in both states
+        # Dada una posición inicial y un estado sucesor,
+        # identifica las piezas que han cambiado su posición
         pieceState = None
         pieceNextState = None
         for piece in state:
-            if piece not in nextState:
-                movedPiece = piece[2]
+            if piece not in nextState:  # Busca la pieza que fue movida
+                movedPiece = piece[2]  # Identifica la pieza movida
                 pieceNext = self.getPieceState(nextState, movedPiece)
-                if pieceNext != None:
+                if pieceNext is not None:
                     pieceState = piece
                     pieceNextState = pieceNext
                     break
-
         return [pieceState, pieceNextState]
 
-    def print_q_table_max(self, q_table):
+    def cambio_promedio(self, old_qtable, new_qtable):
 
-        print("Estado actual         | Estado con mayor Q     | Valor Q máximo")
+        cambios = []
+        for state, actions in new_qtable.items():
+            for action, new_value in actions.items():
 
-        for current_state, actions in q_table.items():
-            if actions:  # Si hay acciones disponibles para este estado
-                max_next_state = max(actions, key=actions.get)  # Estado con el mayor Q-value
-                max_value = actions[max_next_state]  # Máximo Q-value
-                print(
-                    f"{str(self.stringToState(current_state)):<20} | "
-                    f"{str(self.stringToState(max_next_state)):<20} | "
-                    f"{max_value:.2f}"
-                )
-            else:
-                print(
-                    f"{str(self.stringToState(current_state)):<20} | {'N/A':<20} | {'N/A'}"
-                )
+                old_value = old_qtable.get(state, {}).get(action, 0)
+
+                cambios.append(abs(new_value - old_value))
+
+        if cambios:
+            return sum(cambios) / len(cambios)
+        return 0.0
 
 
 def translate(s):
@@ -661,6 +678,8 @@ def translate(s):
     except:
         print(s + "is not in the format '[number][letter]'")
         return None
+
+
 
 
 
@@ -689,12 +708,15 @@ if __name__ == "__main__":
 
     # get list of next states for current state
     print("current State",currentState,"\n")
-    alpha = 0.3
-    gamma = 0.8
-    epsilon = 0.2
-    aichess.qlearning(currentState, alpha, gamma, epsilon)
-
+    alpha = 0.2
+    gamma = 0.9
+    epsilon = 0.3
+    start_time = time.time()
+    aichess.qlearning(currentState, alpha, gamma, epsilon, drunked = True)
+    elapsed_time = time.time() - start_time
     aichess.reconstructPath(currentState)
+
+    print(f"El algoritmo ha tardado en converger {elapsed_time} segundos")
 
 
 

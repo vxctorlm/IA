@@ -34,9 +34,11 @@ class problem():
 
         max_iterations = 150
         number_of_iterations = 0
+        end = False
 
-        while number_of_iterations < max_iterations:
+        while not end:
 
+            Q_table_old = Q_table.copy()
             currentState = startState
             self.board_q1 = board_q1.board_q1(startState,self.initialBoard)
 
@@ -53,22 +55,40 @@ class problem():
 
                 next_idx = nextState[0] * self.board_q1.board.shape[1] + nextState[1]
 
-                Q_table[idx, action] = (
-                        (1 - alpha) * Q_table[idx, action]+ alpha *
-                        (self.board_q1.boardCopy[nextState[0], nextState[1]] + gamma * np.max(Q_table[next_idx]))
+                Q_table[idx, action] += alpha * (
+                        self.board_q1.boardCopy[nextState[0], nextState[1]]
+                        + gamma * np.max(Q_table[next_idx])
+                        - Q_table[idx, action]
                 )
-
 
                 currentState = nextState
 
+            if np.abs(Q_table - Q_table_old).mean() < 1e-4:
+                end = True
 
-            cambioPromedio = np.abs(Q_table - Q_table_old).mean()
-            print(f"Iteración {number_of_iterations}, cambioPromedio {cambioPromedio}")
             number_of_iterations += 1
-            Q_table_old = Q_table.copy()
+
 
 
         return Q_table, reward
+
+    def reconstructPath(self, currentState, qTable):
+        end = False
+        acciones = [(-1,0), (1,0), (0,-1), (0,1)]
+        path = []
+        while not end:
+            path.append(currentState)
+            idx_current = currentState[0] * self.board_q1.board.shape[1] + currentState[1]
+            idx_max = np.argmax(qTable[idx_current])
+
+            if qTable[idx_current][idx_max] == 0:
+                end = True
+
+            currentState = (acciones[idx_max][0] + currentState[0], acciones[idx_max][1] + currentState[1])
+
+        return path
+
+
 
     def print_Q_table(self, Q_table, actions):
         print("Q-learning table: [Top, Bottom, Left, Right]")
@@ -93,9 +113,9 @@ if __name__ == "__main__":
     ]).astype(object)
 
     problem = problem([2,0], initBoard2)
-    alpha = 0.3
-    gamma = 0.8
-    epsilon = 0.3
+    alpha = 0.1
+    gamma = 0.9
+    epsilon = 0.1
     actions = ['T', 'B', 'L', 'R']
 
     start_time = time.time()
@@ -103,6 +123,7 @@ if __name__ == "__main__":
     elapsed_time = time.time() - start_time
     print(f"El algoritmo ha tardado {elapsed_time}")
     problem.print_Q_table(q_table, actions)
+    print(f"{problem.reconstructPath([2,0], q_table)}")
 
 
 
