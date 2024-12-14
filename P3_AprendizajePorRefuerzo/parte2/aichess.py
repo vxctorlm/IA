@@ -587,10 +587,9 @@ class Aichess():
                     actions.remove(nextState)
                     nextState = random.choice(actions)
 
-                """""
+
                 if self.isCheckMate(nextState):
                     reward_function = 100
-
                 else:
                     reward_function = -1
                 """""
@@ -598,6 +597,7 @@ class Aichess():
                     reward_function = 100
                 else:
                     reward_function = -self.h(nextState)
+                """""
 
                 if nextState[0][2] == 6: nextState[0], nextState[1] = nextState[1], nextState[0]
                 if currentState == nextState: continue
@@ -624,7 +624,7 @@ class Aichess():
             if cambio < 1e-5:
                 print(number_of_iterations)
                 end = True
-            print(cambio)
+            print(f"{number_of_iterations} {cambio}")
             currentState = startState
             number_of_iterations += 1
 
@@ -708,11 +708,11 @@ if __name__ == "__main__":
 
     # get list of next states for current state
     print("current State",currentState,"\n")
-    alpha = 0.2
+    alpha = 0.1
     gamma = 0.9
-    epsilon = 0.3
+    epsilon = 0.2
     start_time = time.time()
-    aichess.qlearning(currentState, alpha, gamma, epsilon, drunked = True)
+    aichess.qlearning(currentState, alpha, gamma, epsilon)
     elapsed_time = time.time() - start_time
     aichess.reconstructPath(currentState)
 

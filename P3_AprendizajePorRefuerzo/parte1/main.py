@@ -29,10 +29,8 @@ class problem():
     def qlearning(self, alpha, gamma, epsilon, actions = ['T', 'B', 'L', 'R']):
         startState = self.currentState
         Q_table = np.zeros((12, 4)) # 3 rows x 4 columns = 12 , 4 actions
-        Q_table_old = Q_table.copy()
-        reward = 0
 
-        max_iterations = 150
+
         number_of_iterations = 0
         end = False
 
@@ -50,7 +48,7 @@ class problem():
                 if randomValue < epsilon: action = np.random.randint(0, len(actions)) # Exploración
                 else: action = np.argmax(Q_table[idx]) # Explotación
 
-                nextState, action = self.board_q1.move(currentState, action, actions, drunked = True)
+                nextState, action = self.board_q1.move(currentState, action, actions)
                 if nextState == currentState: continue
 
                 next_idx = nextState[0] * self.board_q1.board.shape[1] + nextState[1]
@@ -63,14 +61,22 @@ class problem():
 
                 currentState = nextState
 
-            if np.abs(Q_table - Q_table_old).mean() < 1e-4:
-                end = True
-
             number_of_iterations += 1
+            if np.abs(Q_table - Q_table_old).mean() < 1e-5:
+                end = True
+                print(number_of_iterations)
 
 
 
-        return Q_table, reward
+
+
+
+
+
+
+
+
+        return Q_table
 
     def reconstructPath(self, currentState, qTable):
         end = False
@@ -113,13 +119,13 @@ if __name__ == "__main__":
     ]).astype(object)
 
     problem = problem([2,0], initBoard2)
-    alpha = 0.1
-    gamma = 0.9
-    epsilon = 0.1
+    alpha = 0.2
+    gamma = 0.85
+    epsilon = 0.2
     actions = ['T', 'B', 'L', 'R']
 
     start_time = time.time()
-    q_table, reward = problem.qlearning(alpha, gamma, epsilon, actions)
+    q_table= problem.qlearning(alpha, gamma, epsilon, actions, )
     elapsed_time = time.time() - start_time
     print(f"El algoritmo ha tardado {elapsed_time}")
     problem.print_Q_table(q_table, actions)
