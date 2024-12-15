@@ -583,7 +583,7 @@ class Aichess():
                         actions,
                         key=lambda action: self.qTable[currentString].get(self.stateToString(action), 0)
                     )
-                if drunked:
+                if drunked and np.random.random() > 0.99:
                     actions.remove(nextState)
                     nextState = random.choice(actions)
 
