@@ -488,7 +488,8 @@ class Aichess():
         self.chess.board.print_board()
 
         # Add the initial state to the path
-        path = [initialState]
+        path = []
+        path.append(copy.deepcopy(initialState))
 
 
         while not checkMate:
@@ -553,7 +554,7 @@ class Aichess():
 
 
 
-    def qlearning(self, startState, alpha, gamma, epsilon, drunked = True):
+    def qlearning(self, startState, alpha, gamma, epsilon, drunked = False):
         currentState = startState
         number_of_iterations = 0
         end = False
@@ -709,11 +710,11 @@ if __name__ == "__main__":
 
     # get list of next states for current state
     print("current State",currentState,"\n")
-    alpha = 0.1
-    gamma = 0.9
+    alpha = 0.2
+    gamma = 0.8
     epsilon = 0.2
     start_time = time.time()
-    aichess.qlearning(currentState, alpha, gamma, epsilon)
+    aichess.qlearning(currentState, alpha, gamma, epsilon, drunked=True)
     elapsed_time = time.time() - start_time
     aichess.reconstructPath(currentState)
 
