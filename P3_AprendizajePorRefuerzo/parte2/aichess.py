@@ -600,7 +600,6 @@ class Aichess():
                     reward_function = -self.h(nextState)
                 """""
 
-
                 if nextState[0][2] == 6: nextState[0], nextState[1] = nextState[1], nextState[0]
                 if currentState == nextState: continue
 
@@ -697,8 +696,8 @@ if __name__ == "__main__":
 
     
     TA[7][0] = 2
-    #TA[7][4] = 6
-    TA[7][7] = 6
+    #TA[7][4] = 6 #Primera Configuración
+    TA[7][7] = 6 # Segunda Configuración
     TA[0][4] = 12
     
     # initialise bord
@@ -712,9 +711,9 @@ if __name__ == "__main__":
     print("current State",currentState,"\n")
     alpha = 0.2
     gamma = 0.8
-    epsilon = 0.2
+    epsilon = 0.1
     start_time = time.time()
-    aichess.qlearning(currentState, alpha, gamma, epsilon, drunked=True)
+    aichess.qlearning(currentState, alpha, gamma, epsilon, drunked = True)
     elapsed_time = time.time() - start_time
     aichess.reconstructPath(currentState)
 
